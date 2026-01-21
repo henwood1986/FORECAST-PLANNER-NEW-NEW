@@ -459,4 +459,200 @@ const CSMForecastPlanner = () => {
                 </thead>
                 <tbody>
                   {customers.map(customer => (
-                    <tr key={customer.id} className="bor
+                    <tr key={customer.id} className="border-b hover:bg-slate-50">
+                      <td className="px-4 py-3 font-medium">{customer.name}</td>
+                      <td className="px-4 py-3 text-slate-600">{customer.csmName}</td>
+                      <td className="px-4 py-3 text-right">{formatCurrency(customer.currentARR)}</td>
+                      <td className="px-4 py-3 text-center">{customer.renewalDate}</td>
+                      <td className="px-4 py-3 text-center text-xs">
+                        {customer.bestCase.renewalPercent}% + {formatCurrency(customer.bestCase.upsell)}
+                      </td>
+                      <td className="px-4 py-3 text-center text-xs">
+                        {customer.mostLikely.renewalPercent}% + {formatCurrency(customer.mostLikely.upsell)}
+                      </td>
+                      <td className="px-4 py-3 text-center text-xs">
+                        {customer.worstCase.renewalPercent}% + {formatCurrency(customer.worstCase.upsell)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => removeCustomer(customer.id)}
+                          className="text-red-600 hover:text-red-800"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* Results */}
+        {calculateMetrics && (
+          <>
+            <div className="mb-4">
+              <h2 className="text-2xl font-semibold text-slate-800">
+                {selectedCSM === 'all' ? 'Overall Forecast' : `Forecast for ${selectedCSM}`}
+              </h2>
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+              {Object.keys(scenarioLabels).map(scenario => (
+                <div key={scenario} className={`rounded-lg shadow-lg p-6 border-2 ${scenarioColors[scenario]}`}>
+                  <h3 className="text-xl font-bold mb-4">{scenarioLabels[scenario]}</h3>
+                  <div className="space-y-3">
+                    <div>
+                      <div className="text-sm text-slate-600">Starting ARR</div>
+                      <div className="text-2xl font-bold">{formatCurrency(calculateMetrics[scenario].overall.startingARR)}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-slate-600">Renewed ARR</div>
+                      <div className="text-2xl font-bold">{formatCurrency(calculateMetrics[scenario].overall.renewedARR)}</div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-slate-600">Total Upsell</div>
+                      <div className="text-2xl font-bold text-green-600">{formatCurrency(calculateMetrics[scenario].overall.upsell)}</div>
+                    </div>
+                    <div className="pt-3 border-t-2">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-semibold">GRR</span>
+                        <span className="text-2xl font-bold">{formatPercent(calculateMetrics[scenario].overall.grr)}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold">NRR</span>
+                        <span className="text-2xl font-bold">{formatPercent(calculateMetrics[scenario].overall.nrr)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Quarterly Breakdown */}
+            <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
+              <h2 className="text-2xl font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                <Calendar className="w-6 h-6" />
+                Quarterly Breakdown
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-100">
+                    <tr>
+                      <th className="px-4 py-3 text-left">Quarter</th>
+                      <th className="px-4 py-3 text-center">Scenario</th>
+                      <th className="px-4 py-3 text-right">Starting ARR</th>
+                      <th className="px-4 py-3 text-right">Renewed ARR</th>
+                      <th className="px-4 py-3 text-right">Upsell</th>
+                      <th className="px-4 py-3 text-center">GRR</th>
+                      <th className="px-4 py-3 text-center">NRR</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {calculateMetrics.bestCase.quarterly.map((quarter, idx) => (
+                      <React.Fragment key={quarter.period}>
+                        <tr className="border-b bg-green-50">
+                          {idx === 0 || calculateMetrics.bestCase.quarterly[idx-1].period !== quarter.period ? (
+                            <td className="px-4 py-3 font-semibold" rowSpan="3">{quarter.period}</td>
+                          ) : null}
+                          <td className="px-4 py-3 text-center font-medium text-green-700">Best Case</td>
+                          <td className="px-4 py-3 text-right">{formatCurrency(quarter.startingARR)}</td>
+                          <td className="px-4 py-3 text-right">{formatCurrency(quarter.renewedARR)}</td>
+                          <td className="px-4 py-3 text-right">{formatCurrency(quarter.upsell)}</td>
+                          <td className="px-4 py-3 text-center font-bold">{formatPercent(quarter.grr)}</td>
+                          <td className="px-4 py-3 text-center font-bold">{formatPercent(quarter.nrr)}</td>
+                        </tr>
+                        <tr className="border-b bg-blue-50">
+                          <td className="px-4 py-3 text-center font-medium text-blue-700">Most Likely</td>
+                          <td className="px-4 py-3 text-right">{formatCurrency(calculateMetrics.mostLikely.quarterly[idx].startingARR)}</td>
+                          <td className="px-4 py-3 text-right">{formatCurrency(calculateMetrics.mostLikely.quarterly[idx].renewedARR)}</td>
+                          <td className="px-4 py-3 text-right">{formatCurrency(calculateMetrics.mostLikely.quarterly[idx].upsell)}</td>
+                          <td className="px-4 py-3 text-center font-bold">{formatPercent(calculateMetrics.mostLikely.quarterly[idx].grr)}</td>
+                          <td className="px-4 py-3 text-center font-bold">{formatPercent(calculateMetrics.mostLikely.quarterly[idx].nrr)}</td>
+                        </tr>
+                        <tr className="border-b bg-orange-50">
+                          <td className="px-4 py-3 text-center font-medium text-orange-700">Worst Case</td>
+                          <td className="px-4 py-3 text-right">{formatCurrency(calculateMetrics.worstCase.quarterly[idx].startingARR)}</td>
+                          <td className="px-4 py-3 text-right">{formatCurrency(calculateMetrics.worstCase.quarterly[idx].renewedARR)}</td>
+                          <td className="px-4 py-3 text-right">{formatCurrency(calculateMetrics.worstCase.quarterly[idx].upsell)}</td>
+                          <td className="px-4 py-3 text-center font-bold">{formatPercent(calculateMetrics.worstCase.quarterly[idx].grr)}</td>
+                          <td className="px-4 py-3 text-center font-bold">{formatPercent(calculateMetrics.worstCase.quarterly[idx].nrr)}</td>
+                        </tr>
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Monthly Breakdown */}
+            <div className="bg-white rounded-lg shadow-lg p-6">
+              <h2 className="text-2xl font-semibold text-slate-800 mb-4 flex items-center gap-2">
+                <TrendingUp className="w-6 h-6" />
+                Monthly Breakdown
+              </h2>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-slate-100">
+                    <tr>
+                      <th className="px-4 py-3 text-left">Month</th>
+                      <th className="px-4 py-3 text-center">Scenario</th>
+                      <th className="px-4 py-3 text-right">Starting ARR</th>
+                      <th className="px-4 py-3 text-right">Renewed ARR</th>
+                      <th className="px-4 py-3 text-right">Upsell</th>
+                      <th className="px-4 py-3 text-center">GRR</th>
+                      <th className="px-4 py-3 text-center">NRR</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {calculateMetrics.bestCase.monthly.map((month, idx) => (
+                      <React.Fragment key={month.period}>
+                        <tr className="border-b bg-green-50">
+                          {idx === 0 || calculateMetrics.bestCase.monthly[idx-1].period !== month.period ? (
+                            <td className="px-4 py-3 font-semibold" rowSpan="3">{month.period}</td>
+                          ) : null}
+                          <td className="px-4 py-3 text-center font-medium text-green-700">Best Case</td>
+                          <td className="px-4 py-3 text-right">{formatCurrency(month.startingARR)}</td>
+                          <td className="px-4 py-3 text-right">{formatCurrency(month.renewedARR)}</td>
+                          <td className="px-4 py-3 text-right">{formatCurrency(month.upsell)}</td>
+                          <td className="px-4 py-3 text-center font-bold">{formatPercent(month.grr)}</td>
+                          <td className="px-4 py-3 text-center font-bold">{formatPercent(month.nrr)}</td>
+                        </tr>
+                        <tr className="border-b bg-blue-50">
+                          <td className="px-4 py-3 text-center font-medium text-blue-700">Most Likely</td>
+                          <td className="px-4 py-3 text-right">{formatCurrency(calculateMetrics.mostLikely.monthly[idx].startingARR)}</td>
+                          <td className="px-4 py-3 text-right">{formatCurrency(calculateMetrics.mostLikely.monthly[idx].renewedARR)}</td>
+                          <td className="px-4 py-3 text-right">{formatCurrency(calculateMetrics.mostLikely.monthly[idx].upsell)}</td>
+                          <td className="px-4 py-3 text-center font-bold">{formatPercent(calculateMetrics.mostLikely.monthly[idx].grr)}</td>
+                          <td className="px-4 py-3 text-center font-bold">{formatPercent(calculateMetrics.mostLikely.monthly[idx].nrr)}</td>
+                        </tr>
+                        <tr className="border-b bg-orange-50">
+                          <td className="px-4 py-3 text-center font-medium text-orange-700">Worst Case</td>
+                          <td className="px-4 py-3 text-right">{formatCurrency(calculateMetrics.worstCase.monthly[idx].startingARR)}</td>
+                          <td className="px-4 py-3 text-right">{formatCurrency(calculateMetrics.worstCase.monthly[idx].renewedARR)}</td>
+                          <td className="px-4 py-3 text-right">{formatCurrency(calculateMetrics.worstCase.monthly[idx].upsell)}</td>
+                          <td className="px-4 py-3 text-center font-bold">{formatPercent(calculateMetrics.worstCase.monthly[idx].grr)}</td>
+                          <td className="px-4 py-3 text-center font-bold">{formatPercent(calculateMetrics.worstCase.monthly[idx].nrr)}</td>
+                        </tr>
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
+        )}
+
+        {customers.length === 0 && (
+          <div className="bg-white rounded-lg shadow-lg p-12 text-center">
+            <Calendar className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-slate-600 mb-2">No customers added yet</h3>
+            <p className="text-slate-500">Add your first customer above or import from CSV</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default CSMForecastPlanner;
